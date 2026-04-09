@@ -23,31 +23,31 @@ class GerenciadorSalasTest {
     }
 
     @Test
-    void CadastrarSalaPorFuncionarioComSucesso() {
-        // Arrange
+    void cadastrarSalaPorFuncionarioComSucesso() {
+        
         Sala sala = criarSala(101, "Laboratorio de Software", 20);
 
-        // Act
+       
         String resultado = gerenciadorSalas.cadastrar(sala, funcionario);
 
-        // Assert
+        
         assertEquals("Sala cadastrada com sucesso.", resultado);
         assertEquals(1, gerenciadorSalas.listarSalas().size());
         assertSame(sala, gerenciadorSalas.buscarPorNumero(101));
     }
 
     @Test
-    void ListarSalasDisponiveisCorretamente() {
-        // Arrange
+    void listarSalasDisponiveisCorretamente() {
+        
         Sala sala1 = criarSala(101, "Laboratorio de Software", 20);
         Sala sala2 = criarSala(202, "Sala de Reuniao", 10);
         gerenciadorSalas.cadastrar(sala1, funcionario);
         gerenciadorSalas.cadastrar(sala2, funcionario);
 
-        // Act
+        
         List<Sala> salasDisponiveis = gerenciadorSalas.listarSalas();
 
-        // Assert
+       
         assertEquals(2, salasDisponiveis.size());
         assertTrue(salasDisponiveis.contains(sala1));
         assertTrue(salasDisponiveis.contains(sala2));

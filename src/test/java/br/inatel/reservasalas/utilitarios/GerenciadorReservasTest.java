@@ -28,15 +28,15 @@ class GerenciadorReservasTest {
     }
 
     @Test
-    void CriarReservaValidaComSucesso() {
-        // Arrange
+    void criarReservaValidaComSucesso() {
+        
         Sala sala = new Sala(301, "Sala de Estudos", 8);
         LocalDateTime inicio = LocalDateTime.now().plusDays(1);
 
-        // Act
+        
         String resultado = gerenciadorReservas.criar(usuario, sala, inicio);
 
-        // Assert
+        
         assertEquals("Reserva criada com sucesso.", resultado);
         assertEquals(1, gerenciadorReservas.listarReservas().size());
 
@@ -50,35 +50,35 @@ class GerenciadorReservasTest {
     }
 
     @Test
-    void CancelarPropriaReservaComSucesso() {
-        // Arrange
+    void cancelarPropriaReservaComSucesso() {
+        
         Sala sala = new Sala(302, "Auditorio", 40);
         LocalDateTime inicio = LocalDateTime.now().plusDays(1);
         gerenciadorReservas.criar(usuario, sala, inicio);
         Reserva reserva = gerenciadorReservas.listarReservas().get(0);
 
-        // Act
+        
         String resultado = gerenciadorReservas.cancelar(reserva, usuario);
 
-        // Assert
+        
         assertEquals("Reserva cancelada com sucesso.", resultado);
         assertFalse(reserva.isAtiva());
         assertTrue(gerenciadorReservas.listarReservasAtivas().isEmpty());
     }
 
     @Test
-    void AlterarSalaDeReservaPorFuncionarioComSucesso() {
-        // Arrange
+    void alterarSalaDeReservaPorFuncionarioComSucesso() {
+        
         Sala salaOriginal = new Sala(401, "Sala de Projetos", 12);
         Sala novaSala = new Sala(402, "Sala Executiva", 6);
         LocalDateTime inicio = LocalDateTime.now().plusDays(1);
         gerenciadorReservas.criar(usuario, salaOriginal, inicio);
         Reserva reserva = gerenciadorReservas.listarReservas().get(0);
 
-        // Act
+       
         String resultado = gerenciadorReservas.alterarSala(reserva, novaSala, funcionario);
 
-        // Assert
+        
         assertEquals("Sala da reserva alterada com sucesso.", resultado);
         assertSame(novaSala, reserva.getSala());
         assertTrue(reserva.isAtiva());

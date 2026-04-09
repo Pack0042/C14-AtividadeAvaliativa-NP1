@@ -18,29 +18,29 @@ class GerenciadorUsuariosTest {
     }
 
     @Test
-    void CadastrarUsuarioComSucesso() {
-        // Arrange
+    void cadastrarUsuarioComSucesso() {
+        
         Usuario usuario = criarUsuarioComum("Maria", "maria@teste.com");
 
-        // Act
+       
         String resultado = gerenciadorUsuarios.cadastrar(usuario);
 
-        // Assert
+        
         assertEquals("Usuario cadastrado com sucesso.", resultado);
         assertEquals(1, gerenciadorUsuarios.getUsuarios().size());
         assertSame(usuario, gerenciadorUsuarios.getUsuarios().get(0));
     }
 
     @Test
-    void RealizarLoginComCredenciaisValidas() {
-        // Arrange
+    void realizarLoginComCredenciaisValidas() {
+       
         Usuario usuario = criarUsuarioComum("Joao", "joao@teste.com");
         gerenciadorUsuarios.cadastrar(usuario);
 
-        // Act
+        
         String resultado = gerenciadorUsuarios.login("joao@teste.com", "123456");
 
-        // Assert
+        
         assertEquals("Login realizado com sucesso. Bem-vindo, Joao!", resultado);
         assertTrue(gerenciadorUsuarios.estaLogado());
         assertSame(usuario, gerenciadorUsuarios.getUsuarioLogado());
