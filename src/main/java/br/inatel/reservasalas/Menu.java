@@ -320,7 +320,7 @@ public class Menu {
             String entrada = scanner.nextLine().trim();
             return LocalDateTime.parse(entrada, formatter);
         } catch (DateTimeParseException e) {
-            System.out.println("Formato invalido. Use dd/MM/yyyy HH:mm");
+            System.out.println("Formato invalido. Use DD/MM/AAAA HH:MM");
             return null;
         }
     }
