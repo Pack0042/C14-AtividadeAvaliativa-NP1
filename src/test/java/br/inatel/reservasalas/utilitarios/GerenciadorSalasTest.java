@@ -37,4 +37,17 @@ class GerenciadorSalasTest {
         assertEquals(salaOriginal, gerenciadorSalas.buscarPorNumero(101));
         assertEquals("Laboratorio de Redes", gerenciadorSalas.buscarPorNumero(101).getDescricao());
     }
+    @Test
+    void removerSalaComSucesso() {
+        GerenciadorSalas gerenciadorSalas = new GerenciadorSalas();
+        Funcionario funcionario = new Funcionario("Patrick", "patrick@email.com", "alodamiao");
+        Sala sala = new Sala(67, "Laboratorio de Redes", 67);
+
+        gerenciadorSalas.cadastrar(sala, funcionario);
+        String resultado = gerenciadorSalas.remover(67, funcionario);
+
+        assertEquals("Sala removida com sucesso.", resultado);
+        assertTrue(gerenciadorSalas.listarSalas().isEmpty());
+        assertEquals(null, gerenciadorSalas.buscarPorNumero(67));
+    }
 }
