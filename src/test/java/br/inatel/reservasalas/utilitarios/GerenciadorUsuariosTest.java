@@ -21,4 +21,16 @@ class GerenciadorUsuariosTest {
         assertEquals(1, gerenciadorUsuarios.getUsuarios().size());
         assertFalse(gerenciadorUsuarios.getUsuarios().contains(usuarioDuplicado));
     }
+
+    @Test
+    void impedirLoginComCredenciaisInvalidas() {
+        GerenciadorUsuarios gerenciadorUsuarios = new GerenciadorUsuarios();
+        Usuario usuario = new Usuario("Ana", "ana@email.com", "123456");
+
+        gerenciadorUsuarios.cadastrar(usuario);
+        String resultado = gerenciadorUsuarios.login("ana@email.com", "senhaErrada");
+
+        assertEquals("Erro: email ou senha incorretos.", resultado);
+        assertFalse(gerenciadorUsuarios.estaLogado());
+    }
 }
