@@ -28,7 +28,7 @@ class GerenciadorReservasTest {
     }
 
     @Test
-    void deveCriarReservaValidaComSucesso() {
+    void CriarReservaValidaComSucesso() {
         // Arrange
         Sala sala = new Sala(301, "Sala de Estudos", 8);
         LocalDateTime inicio = LocalDateTime.now().plusDays(1);
@@ -50,7 +50,7 @@ class GerenciadorReservasTest {
     }
 
     @Test
-    void deveCancelarPropriaReservaComSucesso() {
+    void CancelarPropriaReservaComSucesso() {
         // Arrange
         Sala sala = new Sala(302, "Auditorio", 40);
         LocalDateTime inicio = LocalDateTime.now().plusDays(1);
@@ -67,7 +67,7 @@ class GerenciadorReservasTest {
     }
 
     @Test
-    void deveAlterarSalaDeReservaPorFuncionarioComSucesso() {
+    void AlterarSalaDeReservaPorFuncionarioComSucesso() {
         // Arrange
         Sala salaOriginal = new Sala(401, "Sala de Projetos", 12);
         Sala novaSala = new Sala(402, "Sala Executiva", 6);

@@ -23,7 +23,7 @@ class GerenciadorSalasTest {
     }
 
     @Test
-    void deveCadastrarSalaPorFuncionarioComSucesso() {
+    void CadastrarSalaPorFuncionarioComSucesso() {
         // Arrange
         Sala sala = criarSala(101, "Laboratorio de Software", 20);
 
@@ -37,7 +37,7 @@ class GerenciadorSalasTest {
     }
 
     @Test
-    void deveListarSalasDisponiveisCorretamente() {
+    void ListarSalasDisponiveisCorretamente() {
         // Arrange
         Sala sala1 = criarSala(101, "Laboratorio de Software", 20);
         Sala sala2 = criarSala(202, "Sala de Reuniao", 10);

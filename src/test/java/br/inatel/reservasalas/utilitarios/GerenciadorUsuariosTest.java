@@ -18,7 +18,7 @@ class GerenciadorUsuariosTest {
     }
 
     @Test
-    void deveCadastrarUsuarioComSucesso() {
+    void CadastrarUsuarioComSucesso() {
         // Arrange
         Usuario usuario = criarUsuarioComum("Maria", "maria@teste.com");
 
@@ -32,7 +32,7 @@ class GerenciadorUsuariosTest {
     }
 
     @Test
-    void deveRealizarLoginComCredenciaisValidas() {
+    void RealizarLoginComCredenciaisValidas() {
         // Arrange
         Usuario usuario = criarUsuarioComum("Joao", "joao@teste.com");
         gerenciadorUsuarios.cadastrar(usuario);
