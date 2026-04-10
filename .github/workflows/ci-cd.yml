@@ -1,25 +1,59 @@
 name: CI/CD Pipeline
 
 on:
+  # Executa na main
   push:
-    branches: [main]
+    branches: [main, feat/build-pipeline]
+  # Executa em PRs
   pull_request:
 
 jobs:
-  test:
-    name: Unit Tests
+  # Etapa de empacotamento
+  build:
+    name: Build Package
     runs-on: ubuntu-latest
     permissions:
       contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
+      # Configura o Java
       - name: Set up Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: "17"
+          cache: maven
+
+      # Gera o JAR
+      - name: Build JAR with Maven
+        run: mvn -B clean package -DskipTests
+
+      # Publica o artefato
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: application-jar
+          path: target/*.jar
+          if-no-files-found: error
+
+  # Etapa de testes
+  test:
+    name: Unit Tests
+    needs: [build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
           cache: maven
 
       - name: Run unit tests
@@ -81,7 +115,7 @@ jobs:
 
       - name: Upload raw test reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: surefire-reports
           path: |
@@ -90,20 +124,22 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
+  # Etapa de cobertura
   coverage:
     name: Code Coverage
+    needs: [build]
     runs-on: ubuntu-latest
     permissions:
       contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      - name: Set up Java 17
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: "17"
           cache: maven
 
       - name: Run tests with JaCoCo
@@ -164,7 +200,7 @@ jobs:
 
       - name: Upload coverage report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: jacoco-report
           path: |
