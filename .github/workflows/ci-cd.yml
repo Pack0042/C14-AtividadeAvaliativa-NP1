@@ -1,5 +1,5 @@
 name: Build Package
-
+needs: [ test, coverage ]
 on:
   push:
     branches:
