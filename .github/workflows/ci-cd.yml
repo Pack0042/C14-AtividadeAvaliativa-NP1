@@ -1,0 +1,174 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Run unit tests
+        run: mvn -B clean test
+
+      - name: Generate test summary
+        if: always()
+        shell: bash
+        run: |
+          if ! compgen -G "target/surefire-reports/*.xml" > /dev/null; then
+            echo "## Test Report" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "JUnit reports not found." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          python3 - <<'PY'
+          import os
+          import xml.etree.ElementTree as ET
+          from glob import glob
+          from pathlib import Path
+
+          tests = failures = errors = skipped = 0
+
+          for report in glob("target/surefire-reports/*.xml"):
+              root = ET.parse(report).getroot()
+
+              if root.tag == "testsuite":
+                  suites = [root]
+              else:
+                  suites = root.findall("testsuite")
+
+              for suite in suites:
+                  tests += int(suite.attrib.get("tests", 0))
+                  failures += int(suite.attrib.get("failures", 0))
+                  errors += int(suite.attrib.get("errors", 0))
+                  skipped += int(suite.attrib.get("skipped", 0))
+
+          passed = tests - failures - errors - skipped
+
+          summary_lines = [
+              "## Test Report",
+              "",
+              "| Metric | Value |",
+              "| --- | ---: |",
+              f"| Total tests | {tests} |",
+              f"| Passed | {passed} |",
+              f"| Failures | {failures} |",
+              f"| Errors | {errors} |",
+              f"| Skipped | {skipped} |",
+          ]
+
+          summary = "\n".join(summary_lines) + "\n"
+          Path("test-summary.md").write_text(summary, encoding="utf-8")
+
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary_file:
+              summary_file.write(summary)
+          PY
+
+      - name: Upload raw test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: |
+            target/surefire-reports/
+            test-summary.md
+          if-no-files-found: warn
+          retention-days: 7
+
+  coverage:
+    name: Code Coverage
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Run tests with JaCoCo
+        run: mvn -B clean verify
+
+      - name: Generate coverage summary table
+        if: always()
+        shell: bash
+        run: |
+          if [ ! -f target/site/jacoco/jacoco.xml ]; then
+            echo "## Coverage Report" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "JaCoCo report not found." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          python3 - <<'PY'
+          import os
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          report_path = Path("target/site/jacoco/jacoco.xml")
+          root = ET.parse(report_path).getroot()
+
+          counters = {
+              counter.attrib["type"]: (
+                  int(counter.attrib["missed"]),
+                  int(counter.attrib["covered"]),
+              )
+              for counter in root.findall("counter")
+          }
+
+          rows = []
+          for metric in ("LINE", "BRANCH", "METHOD"):
+              missed, covered = counters.get(metric, (0, 0))
+              total = missed + covered
+              coverage = (covered / total * 100) if total else 0.0
+              rows.append((metric.title(), covered, missed, total, coverage))
+
+          summary_lines = [
+              "## Coverage Report",
+              "",
+              "| Metric | Covered | Missed | Total | Coverage |",
+              "| --- | ---: | ---: | ---: | ---: |",
+          ]
+
+          for metric, covered, missed, total, coverage in rows:
+              summary_lines.append(
+                  f"| {metric} | {covered} | {missed} | {total} | {coverage:.2f}% |"
+              )
+
+          summary = "\n".join(summary_lines) + "\n"
+          Path("coverage-summary.md").write_text(summary, encoding="utf-8")
+
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary_file:
+              summary_file.write(summary)
+          PY
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: |
+            target/site/jacoco/
+            coverage-summary.md
+          if-no-files-found: warn
+          retention-days: 7
