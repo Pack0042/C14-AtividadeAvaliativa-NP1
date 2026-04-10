@@ -8,14 +8,12 @@ Este projeto consiste no desenvolvimento de um sistema de reserva de salas, perm
 
 ---
 
-
-
-
 ## Tecnologias
 
 - Java  
 - Maven (gerenciamento de dependências)
-- JUnit (testes unitários)  
+- JUnit (testes unitários)
+- JaCoCo (cobertura de testes)
 - GitHub Actions (integração contínua e deploy)  
 
 ---
@@ -66,6 +64,42 @@ Este projeto consiste no desenvolvimento de um sistema de reserva de salas, perm
 - A renovação da sala só poderá ser solicitada quando faltarem 15 minutos ou menos para o término da reserva atual  
 - A renovação só será permitida caso não exista outra reserva para a sala no horário seguinte 
 - O usuário será notificado quando o horário da reserva estiver próximo do término
+
+---
+
+## Comandos (Scripts)
+
+## Scripts
+
+**Compila o projeto.**
+
+```bash
+mvn compile
+```
+
+**Executa os testes unitários.**
+
+```bash
+mvn test  
+```
+**Executa os testes e gera o relatório de cobertura com JaCoCo.**
+
+```bash
+mvn verify  
+```
+
+**Gera o arquivo `.jar` do projeto.**
+
+```bash
+mvn package
+```
+**Remove os arquivos gerados anteriormente na pasta `target`.**
+
+```bash
+mvn clean  
+```
+
+---
 
 ## Autores
 
