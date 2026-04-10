@@ -1,3 +1,5 @@
+[![CI/CD Pipeline](https://github.com/Pack0042/C14-AtividadeAvaliativa-NP1/actions/workflows/ci-cd.yml/badge.svg?branch=main)](https://github.com/Pack0042/C14-AtividadeAvaliativa-NP1/actions/workflows/ci-cd.yml)
+
 # Sistema de Reserva de Salas
 
 ## Descrição
