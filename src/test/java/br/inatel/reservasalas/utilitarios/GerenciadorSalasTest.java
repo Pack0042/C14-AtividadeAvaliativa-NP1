@@ -78,6 +78,17 @@ class GerenciadorSalasTest {
     }
 
     @Test
+    void impedirRemocaoDeSalaPorUsuarioComum() {
+        Sala sala = criarSala(14, "Sala da biblioteca", 10);
+        gerenciadorSalas.cadastrar(sala, funcionario);
+
+        String resultado = gerenciadorSalas.remover(14, usuarioComum);
+
+        assertEquals("Erro: apenas funcionarios podem remover salas.", resultado);
+        assertEquals(1, gerenciadorSalas.listarSalas().size());
+    }
+
+    @Test
     void removerSalaComSucesso() {
         Sala sala = criarSala(67, "Laboratorio de Redes", 67);
 

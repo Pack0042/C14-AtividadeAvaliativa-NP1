@@ -34,6 +34,14 @@ class GerenciadorUsuariosTest {
     }
 
     @Test
+    void impedirLoginComEmailInexistente() {
+        String resultado = gerenciadorUsuarios.login("inexistente@teste.com", DEFAULT_PASSWORD);
+
+        assertEquals("Erro: email ou senha incorretos.", resultado);
+        assertFalse(gerenciadorUsuarios.estaLogado());
+    }
+
+    @Test
     void impedirCadastroDeUsuarioComEmailDuplicado() {
         Usuario usuarioDuplicado = new Usuario("Ana Clara", "ana@email.com", DEFAULT_PASSWORD);
 
