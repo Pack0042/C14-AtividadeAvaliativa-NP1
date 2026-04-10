@@ -1,5 +1,4 @@
 name: Build Package
-needs: [ test, coverage ]
 on:
   push:
     branches:
@@ -10,6 +9,7 @@ on:
 
 jobs:
   build:
+    needs: [ test, coverage ]
     runs-on: ubuntu-latest
 
     steps:
