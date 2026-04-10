@@ -31,11 +31,70 @@ jobs:
           reporter: java-junit
           fail-on-error: true
 
+      - name: Code Coverage
+        if: always()
+        shell: bash
+        run: |
+          if [ ! -f target/site/jacoco/jacoco.xml ]; then
+            echo "## Coverage Report" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "JaCoCo report not found." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          python - <<'PY'
+          import os
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          report_path = Path("target/site/jacoco/jacoco.xml")
+          root = ET.parse(report_path).getroot()
+
+          counters = {
+              counter.attrib["type"]: (
+                  int(counter.attrib["missed"]),
+                  int(counter.attrib["covered"]),
+              )
+              for counter in root.findall("counter")
+          }
+
+          def percentage(counter_type):
+              missed, covered = counters.get(counter_type, (0, 0))
+              total = missed + covered
+              return (covered / total * 100) if total else 0.0
+
+          summary = "\n".join(
+              [
+                  "## Coverage Report",
+                  "",
+                  f"- Line coverage: {percentage('LINE'):.2f}%",
+                  f"- Branch coverage: {percentage('BRANCH'):.2f}%",
+                  f"- Method coverage: {percentage('METHOD'):.2f}%",
+              ]
+          )
+
+          Path("coverage-summary.md").write_text(summary + "\n", encoding="utf-8")
+
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary_file:
+              summary_file.write(summary + "\n")
+          PY
+
       - name: Upload raw test reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: surefire-reports
           path: target/surefire-reports/
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: |
+            target/site/jacoco/
+            coverage-summary.md
           if-no-files-found: warn
           retention-days: 7
