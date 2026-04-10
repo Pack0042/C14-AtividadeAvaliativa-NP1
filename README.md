@@ -69,8 +69,8 @@ Este projeto consiste no desenvolvimento de um sistema de reserva de salas, perm
 
 ## Autores
 
-- Patrick Augusto Lins de Oliveira Damião - GES - 496
-- Pedro Armengol de Oliveira - GEC - 2093
-- Pedro Henrique de Paula Andrade - GES - 368
+- [Patrick Augusto Lins de Oliveira Damião](https://github.com/Pack0042) - GES - 496
+- [Pedro Armengol de Oliveira](https://github.com/Armengolz) - GEC - 2093
+- [Pedro Henrique de Paula Andrade](https://github.com/phandrad3) - GES - 368
 
 ---
