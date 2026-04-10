@@ -141,6 +141,137 @@ class GerenciadorReservasTest {
         }
     }
 
+    @Test
+    void renovarReservaComSucesso() {
+        Sala sala = criarSala(14, "Sala da biblioteca", 8);
+        LocalDateTime momentoCriacao = LocalDateTime.of(2026, 10, 14, 10, 0);
+        LocalDateTime inicioReserva = momentoCriacao.plusHours(1); // 11:00
+        // fim = 13:00, renovacao = 12:45 - 13:00
+        LocalDateTime momentoRenovacao = LocalDateTime.of(2026, 10, 14, 12, 50);
+
+        final LocalDateTime[] agoraRef = { momentoCriacao };
+
+        try (MockedStatic<LocalDateTime> mockedTime =
+                     Mockito.mockStatic(LocalDateTime.class, Mockito.CALLS_REAL_METHODS)) {
+            mockedTime.when(LocalDateTime::now).thenAnswer(invocation -> agoraRef[0]);
+
+            gerenciadorReservas.criar(usuario, sala, inicioReserva);
+            Reserva reservaOriginal = gerenciadorReservas.listarReservas().get(0);
+
+            agoraRef[0] = momentoRenovacao;
+
+            String resultado = gerenciadorReservas.renovar(reservaOriginal);
+
+            assertEquals("Reserva renovada com sucesso.", resultado);
+            assertEquals(2, gerenciadorReservas.listarReservas().size());
+
+            Reserva novaReserva = gerenciadorReservas.listarReservas().get(1);
+            assertEquals(reservaOriginal.getFim(), novaReserva.getInicio());
+            assertEquals(reservaOriginal.getFim().plusHours(2), novaReserva.getFim());
+            assertTrue(novaReserva.isAtiva());
+        }
+    }
+
+    @Test
+    void impedirCancelamentoDeReservaPorOutroUsuario() {
+        Sala sala = criarSala(14, "Sala da biblioteca", 8);
+        LocalDateTime inicio = criarInicioFuturo();
+        gerenciadorReservas.criar(usuario, sala, inicio);
+        Reserva reserva = gerenciadorReservas.listarReservas().get(0);
+
+        Usuario outroUsuario = criarUsuarioComum("Patrick", "patrick@teste.com");
+        String resultado = gerenciadorReservas.cancelar(reserva, outroUsuario);
+
+        assertEquals("Erro: voce nao tem permissao para cancelar esta reserva.", resultado);
+        assertTrue(reserva.isAtiva());
+    }
+
+    @Test
+    void impedirReservaComConflitoDeSala() {
+        Sala sala = criarSala(14, "Sala da biblioteca", 8);
+        LocalDateTime inicio = criarInicioFuturo();
+        gerenciadorReservas.criar(usuario, sala, inicio);
+
+        Usuario outroUsuario = criarUsuarioComum("Bernardo", "bernardo@teste.com");
+        String resultado = gerenciadorReservas.criar(outroUsuario, sala, inicio);
+
+        assertEquals("Erro: a sala ja esta reservada neste horario.", resultado);
+        assertEquals(1, gerenciadorReservas.listarReservas().size());
+    }
+
+    @Test
+    void impedirAlteracaoDeSalaPorUsuarioComum() {
+        Sala salaOriginal = criarSala(14, "Sala da biblioteca", 8);
+        Sala novaSala = criarSala(15, "Sala da biblioteca", 12);
+        LocalDateTime inicio = criarInicioFuturo();
+        gerenciadorReservas.criar(usuario, salaOriginal, inicio);
+        Reserva reserva = gerenciadorReservas.listarReservas().get(0);
+
+        String resultado = gerenciadorReservas.alterarSala(reserva, novaSala, usuario);
+
+        assertEquals("Erro: apenas funcionarios podem alterar a sala de uma reserva.", resultado);
+        assertSame(salaOriginal, reserva.getSala());
+    }
+
+    @Test
+    void impedirCancelamentoDeReservaJaCancelada() {
+        Sala sala = criarSala(14, "Sala da biblioteca", 8);
+        LocalDateTime inicio = criarInicioFuturo();
+        gerenciadorReservas.criar(usuario, sala, inicio);
+        Reserva reserva = gerenciadorReservas.listarReservas().get(0);
+
+        gerenciadorReservas.cancelar(reserva, usuario);
+        String resultado = gerenciadorReservas.cancelar(reserva, usuario);
+
+        assertEquals("Erro: esta reserva ja foi encerrada.", resultado);
+    }
+
+    @Test
+    void impedirCriacaoDeReservaComReservaAtivaExistente() {
+        Sala sala1 = criarSala(301, "Sala de Estudos", 8);
+        Sala sala2 = criarSala(302, "Auditorio", 40);
+        LocalDateTime inicio = criarInicioFuturo();
+
+        gerenciadorReservas.criar(usuario, sala1, inicio);
+        String resultado = gerenciadorReservas.criar(usuario, sala2, inicio.plusHours(3));
+
+        assertEquals("Erro: usuario ja possui uma reserva ativa.", resultado);
+        assertEquals(1, gerenciadorReservas.listarReservas().size());
+    }
+
+    @Test
+    void impedirRenovacaoForaDaJanela() {
+        Sala sala = criarSala(301, "Sala de Estudos", 8);
+        LocalDateTime inicio = criarInicioFuturo();
+
+        gerenciadorReservas.criar(usuario, sala, inicio);
+        Reserva reserva = gerenciadorReservas.listarReservas().get(0);
+
+        String resultado = gerenciadorReservas.renovar(reserva);
+
+        assertEquals("Erro: a renovacao so pode ser solicitada nos ultimos 15 minutos da reserva.", resultado);
+        assertEquals(1, gerenciadorReservas.listarReservas().size());
+    }
+
+    @Test
+    void impedirAlteracaoParaSalaComConflito() {
+        Sala sala1 = criarSala(301, "Sala de Estudos", 8);
+        Sala sala2 = criarSala(302, "Auditorio", 40);
+        LocalDateTime inicio = criarInicioFuturo();
+
+        Usuario outroUsuario = criarUsuarioComum("Ana", "ana@teste.com");
+
+        gerenciadorReservas.criar(usuario, sala1, inicio);
+        gerenciadorReservas.criar(outroUsuario, sala2, inicio);
+
+        Reserva primeiraReserva = gerenciadorReservas.listarReservas().get(0);
+
+        String resultado = gerenciadorReservas.alterarSala(primeiraReserva, sala2, funcionario);
+
+        assertEquals("Erro: a nova sala ja esta reservada neste horario.", resultado);
+        assertSame(sala1, primeiraReserva.getSala());
+    }
+
     private Usuario criarUsuarioComum(String nome, String email) {
         return new Usuario(nome, email, DEFAULT_PASSWORD);
     }
