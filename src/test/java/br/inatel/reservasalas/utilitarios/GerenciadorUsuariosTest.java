@@ -47,7 +47,4 @@ class GerenciadorUsuariosTest {
         return new Usuario(nome, email, DEFAULT_PASSWORD);
     }
 
-    private Funcionario criarFuncionario(String nome, String email) {
-        return new Funcionario(nome, email, DEFAULT_PASSWORD);
-    }
 }
