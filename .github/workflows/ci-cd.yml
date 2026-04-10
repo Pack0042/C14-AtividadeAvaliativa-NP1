@@ -3,7 +3,7 @@ name: CI/CD Pipeline
 on:
   # Executa na main
   push:
-    branches: [main, feat/build-pipeline]
+    branches: [main]
   # Executa em PRs
   pull_request:
 
