@@ -65,4 +65,10 @@ Este projeto consiste no desenvolvimento de um sistema de reserva de salas, perm
 - A renovação só será permitida caso não exista outra reserva para a sala no horário seguinte 
 - O usuário será notificado quando o horário da reserva estiver próximo do término
 
+## Autores
+
+- Patrick Augusto Lins de Oliveira Damião - GES - 496
+- Pedro Armengol de Oliveira - GEC - 2093
+- Pedro Henrique de Paula Andrade - GES - 368
+
 ---

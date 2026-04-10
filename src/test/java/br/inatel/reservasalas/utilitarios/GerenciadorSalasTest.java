@@ -6,8 +6,11 @@ import br.inatel.reservasalas.entidades.Usuario;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GerenciadorSalasTest {
@@ -23,6 +26,31 @@ class GerenciadorSalasTest {
         gerenciadorSalas = new GerenciadorSalas();
         funcionario = criarFuncionario("Ana", "ana@empresa.com");
         usuarioComum = new Usuario("Ana", "ana@email.com", DEFAULT_PASSWORD);
+    }
+
+    @Test
+    void cadastrarSalaPorFuncionarioComSucesso() {
+        Sala sala = criarSala(101, "Laboratorio de Software", 20);
+
+        String resultado = gerenciadorSalas.cadastrar(sala, funcionario);
+
+        assertEquals("Sala cadastrada com sucesso.", resultado);
+        assertEquals(1, gerenciadorSalas.listarSalas().size());
+        assertSame(sala, gerenciadorSalas.buscarPorNumero(101));
+    }
+
+    @Test
+    void listarTodasAsSalasCadastradas() {
+        Sala sala1 = criarSala(101, "Laboratorio de Software", 20);
+        Sala sala2 = criarSala(202, "Sala de Reuniao", 10);
+        gerenciadorSalas.cadastrar(sala1, funcionario);
+        gerenciadorSalas.cadastrar(sala2, funcionario);
+
+        List<Sala> salas = gerenciadorSalas.listarSalas();
+
+        assertEquals(2, salas.size());
+        assertTrue(salas.contains(sala1));
+        assertTrue(salas.contains(sala2));
     }
 
     @Test
