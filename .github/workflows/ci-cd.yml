@@ -8,6 +8,8 @@ jobs:
   test:
     name: Unit Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
@@ -22,16 +24,91 @@ jobs:
       - name: Run unit tests
         run: mvn -B clean test
 
-      - name: Publish test results
+      - name: Generate test summary
         if: always()
-        uses: dorny/test-reporter@v1
-        with:
-          name: JUnit Test Results
-          path: target/surefire-reports/*.xml
-          reporter: java-junit
-          fail-on-error: true
+        shell: bash
+        run: |
+          if ! compgen -G "target/surefire-reports/*.xml" > /dev/null; then
+            echo "## Test Report" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "JUnit reports not found." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
 
-      - name: Code Coverage
+          python3 - <<'PY'
+          import os
+          import xml.etree.ElementTree as ET
+          from glob import glob
+          from pathlib import Path
+
+          tests = failures = errors = skipped = 0
+
+          for report in glob("target/surefire-reports/*.xml"):
+              root = ET.parse(report).getroot()
+
+              if root.tag == "testsuite":
+                  suites = [root]
+              else:
+                  suites = root.findall("testsuite")
+
+              for suite in suites:
+                  tests += int(suite.attrib.get("tests", 0))
+                  failures += int(suite.attrib.get("failures", 0))
+                  errors += int(suite.attrib.get("errors", 0))
+                  skipped += int(suite.attrib.get("skipped", 0))
+
+          passed = tests - failures - errors - skipped
+
+          summary_lines = [
+              "## Test Report",
+              "",
+              "| Metric | Value |",
+              "| --- | ---: |",
+              f"| Total tests | {tests} |",
+              f"| Passed | {passed} |",
+              f"| Failures | {failures} |",
+              f"| Errors | {errors} |",
+              f"| Skipped | {skipped} |",
+          ]
+
+          summary = "\n".join(summary_lines) + "\n"
+          Path("test-summary.md").write_text(summary, encoding="utf-8")
+
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary_file:
+              summary_file.write(summary)
+          PY
+
+      - name: Upload raw test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: |
+            target/surefire-reports/
+            test-summary.md
+          if-no-files-found: warn
+          retention-days: 7
+
+  coverage:
+    name: Code Coverage
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Run tests with JaCoCo
+        run: mvn -B clean verify
+
+      - name: Generate coverage summary table
         if: always()
         shell: bash
         run: |
@@ -42,7 +119,7 @@ jobs:
             exit 0
           fi
 
-          python - <<'PY'
+          python3 - <<'PY'
           import os
           import xml.etree.ElementTree as ET
           from pathlib import Path
@@ -58,35 +135,31 @@ jobs:
               for counter in root.findall("counter")
           }
 
-          def percentage(counter_type):
-              missed, covered = counters.get(counter_type, (0, 0))
+          rows = []
+          for metric in ("INSTRUCTION", "LINE", "BRANCH", "METHOD"):
+              missed, covered = counters.get(metric, (0, 0))
               total = missed + covered
-              return (covered / total * 100) if total else 0.0
+              coverage = (covered / total * 100) if total else 0.0
+              rows.append((metric.title(), covered, missed, total, coverage))
 
-          summary = "\n".join(
-              [
-                  "## Coverage Report",
-                  "",
-                  f"- Line coverage: {percentage('LINE'):.2f}%",
-                  f"- Branch coverage: {percentage('BRANCH'):.2f}%",
-                  f"- Method coverage: {percentage('METHOD'):.2f}%",
-              ]
-          )
+          summary_lines = [
+              "## Coverage Report",
+              "",
+              "| Metric | Covered | Missed | Total | Coverage |",
+              "| --- | ---: | ---: | ---: | ---: |",
+          ]
 
-          Path("coverage-summary.md").write_text(summary + "\n", encoding="utf-8")
+          for metric, covered, missed, total, coverage in rows:
+              summary_lines.append(
+                  f"| {metric} | {covered} | {missed} | {total} | {coverage:.2f}% |"
+              )
+
+          summary = "\n".join(summary_lines) + "\n"
+          Path("coverage-summary.md").write_text(summary, encoding="utf-8")
 
           with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary_file:
-              summary_file.write(summary + "\n")
+              summary_file.write(summary)
           PY
-
-      - name: Upload raw test reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: surefire-reports
-          path: target/surefire-reports/
-          if-no-files-found: warn
-          retention-days: 7
 
       - name: Upload coverage report
         if: always()
