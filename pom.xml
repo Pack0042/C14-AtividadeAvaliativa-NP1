@@ -82,6 +82,13 @@
                 </executions>
             </plugin>
 
+            <!-- Plugin para gerar o site Maven -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.12.1</version>
+            </plugin>
+
             <!-- Plugin para gerar JAR executavel -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -97,4 +104,14 @@
             </plugin>
         </plugins>
     </build>
+
+    <!-- Reporting - integra JaCoCo ao site Maven -->
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </reporting>
 </project>
