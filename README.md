@@ -207,7 +207,6 @@ O resultado da IA que utilizou o prompt foi satisfatório, apenas pequenas coisa
 
 Utilizo o ChatGPT para criar prompts e os envio para Codex, Claude, Copilot e Gemini. Depois, comparo as respostas e sigo com a solução mais adequada ao projeto. 
 
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 Estou trabalhando em um projeto Java com Maven, JUnit 5 e Mockito, e preciso ajustar os testes unitários com base em comentários de review.
 
 Quero que você:
@@ -226,8 +225,6 @@ Quero que você:
 Contexto:
 - Existem testes para `GerenciadorReservas`, `GerenciadorSalas` e `GerenciadorUsuarios`
 - O projeto já possui branch principal com testes e outra branch com testes adicionais
-
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 Estou trabalhando em um projeto Java com Maven, JUnit 5, JaCoCo e GitHub Actions, e quero ajustar o pipeline CI/CD.
 
@@ -254,4 +251,3 @@ Quero que você atualize o workflow para:
 - evitar ações que possam gerar erro `HttpError: Resource not accessible by integration`, como `dorny/test-reporter`
 - manter o workflow simples, compatível com repositório público e sem depender de permissões especiais desnecessárias
 
-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
