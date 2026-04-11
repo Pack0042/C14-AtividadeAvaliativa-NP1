@@ -213,7 +213,7 @@ jobs:
   deploy-site:
     name: Deploy Site to GitHub Pages
     needs: [test, coverage]
-    # if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       pages: write
@@ -249,8 +249,7 @@ jobs:
   notify:
     name: Notification
     needs: [deploy-site]
-    # if: always() && needs.deploy-site.result != 'skipped'
-    if: always()
+    if: always() && needs.deploy-site.result != 'skipped'
     runs-on: ubuntu-latest
     environment: github-pages
     permissions:
